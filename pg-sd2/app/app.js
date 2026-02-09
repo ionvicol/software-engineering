@@ -12,7 +12,14 @@ const db = require('./services/db');
 
 // Create a route for root - /
 app.get("/", function(req, res) {
-    res.send("Hello world!");
+    res.send("Hello worlddddd!");
+});
+
+// Create a route for roehampton with some logic processing the request string
+app.get("/roehampton", function(req, res) {
+    console.log(req.url)
+    let path = req.url;
+    res.send(path.substring(0,3))
 });
 
 // Create a route for testing the db
@@ -25,6 +32,29 @@ app.get("/db_test", function(req, res) {
     });
 });
 
+// Create a route for testing the db
+app.get("/db_test/:id", function(req, res) {
+
+    // 1. Capture the id parameter from the URL
+    var id = req.params.id;
+
+    // 2. SQL query with a WHERE clause
+    var sql = 'SELECT name FROM test_table WHERE id = ?';
+
+    // 3. Run query and pass id as parameter
+    db.query(sql, [id]).then(results => {
+        console.log(results);
+
+        // If a matching record is found
+        if (results.length > 0) {
+            // 4. Output only the name
+            res.send(`<h2>Name for ID ${id}</h2><p>${results[0].name}</p>`);
+        } else {
+            res.send("No record found for this ID");
+        }
+    });
+});
+
 // Create a route for /goodbye
 // Responds to a 'GET' request
 app.get("/goodbye", function(req, res) {
@@ -34,6 +64,14 @@ app.get("/goodbye", function(req, res) {
 // Create a dynamic route for /hello/<name>, where name is any value provided by user
 // At the end of the URL
 // Responds to a 'GET' request
+app.get("/hello/:name/:id", function(req, res) {
+    // req.params contains any parameters in the request
+    // We can examine it in the console for debugging purposes
+    console.log(req.params);
+    //  Retrieve the 'name' parameter and use it in a dynamically generated page
+    res.send("Hello " + req.params.name + " with id " + req.params.id);
+});
+
 app.get("/hello/:name", function(req, res) {
     // req.params contains any parameters in the request
     // We can examine it in the console for debugging purposes
