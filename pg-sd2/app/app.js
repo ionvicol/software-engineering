@@ -15,6 +15,32 @@ app.get("/", function(req, res) {
     res.send("Hello worlddddd!");
 });
 
+//task 1
+app.get("/all-students", function(req, res) {
+    var sql = "select * from students";
+    db.query(sql).then(results => {
+        console.log(results);
+        res.json(results)
+    });
+});
+
+//task 2
+app.get("/all-students-formatted", function(req, res) {
+    var sql = "select * from students";
+    var output = '<table border="1px">';
+    db.query(sql).then(results => {
+        for (var row of results) {
+            output += '<tr>';
+            output += `<td>${row.id}</td>`;
+            output += `<td>${row.name}</td>`;
+            output += '</tr>';
+        }
+        output += '</table>';
+        res.send(output);
+    });
+});
+
+
 // Create a route for roehampton with some logic processing the request string
 app.get("/roehampton", function(req, res) {
     console.log(req.url)
@@ -70,6 +96,14 @@ app.get("/hello/:name/:id", function(req, res) {
     console.log(req.params);
     //  Retrieve the 'name' parameter and use it in a dynamically generated page
     res.send("Hello " + req.params.name + " with id " + req.params.id);
+});
+
+app.get("/hello/:name", function(req, res) {
+    // req.params contains any parameters in the request
+    // We can examine it in the console for debugging purposes
+    console.log(req.params);
+    //  Retrieve the 'name' parameter and use it in a dynamically generated page
+    res.send("Hello " + req.params.name);
 });
 
 app.get("/hello/:name", function(req, res) {
