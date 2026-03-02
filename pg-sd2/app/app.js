@@ -16,7 +16,10 @@ const db = require('./services/db');
 
 // Create a route for root - /
 app.get("/", function(req, res) {
-    res.send("Hello worlddddd!");
+    // Set up an array of data
+    var test_data = ['one', 'two', 'three', 'four'];
+    // Send the array through to the template as a variable called data
+    res.render("index", {'title':'My index page', 'heading':'My heading', 'data':test_data});
 });
 
 //task 1
@@ -28,19 +31,13 @@ app.get("/all-students", function(req, res) {
     });
 });
 
-//task 2
+// Task 2 display a formatted list of students
 app.get("/all-students-formatted", function(req, res) {
-    var sql = "select * from students";
-    var output = '<table border="1px">';
+    var sql = 'select * from Students';
     db.query(sql).then(results => {
-        for (var row of results) {
-            output += '<tr>';
-            output += `<td>${row.id}</td>`;
-            output += `<td>${row.name}</td>`;
-            output += '</tr>';
-        }
-        output += '</table>';
-        res.send(output);
+    	    // Send the results rows to the all-students template
+    	    // The rows will be in a variable called data
+        res.render('all-students', {data: results});
     });
 });
 
@@ -60,6 +57,40 @@ app.get("/db_test", function(req, res) {
         console.log(results);
         res.send(results)
     });
+});
+
+app.get("/student-single/:id", async function(req, res) {
+    try {
+        // Get student info
+        const student = await db.query('SELECT * FROM Students WHERE id = ?', [req.params.id]);
+
+        // Get student programme info
+        const programmeInfo = await db.query('SELECT * FROM Student_Programme WHERE id = ?', [req.params.id]);
+
+        // Get modules for that programme
+        const modules = await db.query(
+            'SELECT module FROM Programme_Modules WHERE programme = ?',
+            [programmeInfo[0].programme]  // assuming programmeInfo has at least one row
+        );
+
+        if(student.length === 0) {
+            return res.status(404).send('Student not found');
+        }
+
+        // Convert modules array of objects to a simple array of module names
+        const moduleNames = modules.map(m => m.module);
+
+        // Render the Pug template called 'student-single.pug'
+        res.render('student-single', {
+            student: student[0],
+            programme: programmeInfo[0],
+            modules: moduleNames
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error fetching student data');
+    }
 });
 
 // Create a route for testing the db
